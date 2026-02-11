@@ -1,7 +1,7 @@
 """
 Script: 01_data_extraction.py
 Project: Motivational Salience Index (MSI)
-Author: Malika Tapparel
+Authors: Marie Pittet, adapted by Malika Tapparel
 Description: Adapted scripts from Marie Pittet's project to fit Stimulus-Response Compatibility task
 Turns event-level task logs into:
 1) trial_df: one row per trial
@@ -11,7 +11,7 @@ Turns event-level task logs into:
 # ------------------------------------------------------------
 # 0) Env
 # ------------------------------------------------------------
-# %%
+
 import numpy as np
 import pandas as pd
 
@@ -91,7 +91,7 @@ trial_df['rt_miss_away'] = trial_df['rt'].where((trial_df['trial_type'] == 'away
 # Group key
 g = ["sbj", "item_id"]
 
-# %%
+
 # Aggregate counts + RT summaries
 item_df = (
     trial_df.dropna(subset=["item_id"])
@@ -119,16 +119,16 @@ item_df = (
         median_rt_miss_away=("rt_miss_away", "median"),
     )
 )
-# %%
-# Compute go/nogo accuracies from counts (vectorized, no lambdas)
+
+# Compute go/nogo accuracies from counts
 towards_den = item_df["n_correct_towards"] + item_df["n_miss_towards"]
 away_den = item_df["n_correct_away"] + item_df["n_miss_away"]
 
-item_df["acc_go"] = item_df["n_correct_towards"] / towards_den
-item_df.loc[towards_den == 0, "acc_go"] = np.nan
+item_df["acc_towards"] = item_df["n_correct_towards"] / towards_den
+item_df.loc[towards_den == 0, "acc_towards"] = np.nan
 
-item_df["acc_nogo"] = item_df["n_correct_away"] / away_den
-item_df.loc[away_den == 0, "acc_nogo"] = np.nan
+item_df["acc_away"] = item_df["n_correct_away"] / away_den
+item_df.loc[away_den == 0, "acc_away"] = np.nan
 
 # ------------------------------------------------------------
 # 8) Extracting the dataframes for later use
@@ -136,4 +136,3 @@ item_df.loc[away_den == 0, "acc_nogo"] = np.nan
 trial_df.to_csv("../data/extracted/trial_df.csv", index=False)
 item_df.to_csv("../data/extracted/item_df.csv", index=False)
 
-# %%
