@@ -6,8 +6,10 @@ Description: Adapted scripts from Marie Pittet's project to fit Stimulus-Respons
 Turns event-level task logs into:
 1) trial_df: one row per trial
 2) item_df: one row per food item per task 
+This 'test' branch will include only: is_correct, is_miss, rt_towards, rt_away
 - Merges VAS liking score  for each food item 
 """
+# %%
 # ------------------------------------------------------------
 # 0) Env
 # ------------------------------------------------------------
@@ -73,24 +75,31 @@ trial_df = trial_df.dropna(subset=["vas_score"]).copy()
 
 # 
 # ------------------------------------------------------------
-# 5) Item-level summary: separate Towards vs away + RT only on responses
+# 5) Item-level summary: separate Towards vs away + RT only on correct responses
 # ------------------------------------------------------------
 
 # Basic outcome flags
-trial_df["is_correct_towards"]  = (trial_df["outcome"] == "Correct") & (trial_df["trial_type"] == "towards")
-trial_df["is_correct_away"]  = (trial_df["outcome"] == "Correct") & (trial_df["trial_type"] == "away")
-trial_df["is_miss_towards"] = (trial_df["outcome"] == "Missed") & (trial_df["trial_type"] == "towards")
-trial_df["is_miss_away"] = (trial_df["outcome"] == "Missed") & (trial_df["trial_type"] == "away")
+trial_df["is_correct"]  = (trial_df["outcome"] == "Correct")
+trial_df["is_miss"] = (trial_df["outcome"] == "Missed")
 
-# Get RT for trials towards and away
-trial_df['rt_correct_towards'] = trial_df['rt'].where((trial_df['trial_type'] == 'towards') & (trial_df["is_correct_towards"] == True), np.nan)
-trial_df['rt_correct_away'] = trial_df['rt'].where((trial_df['trial_type'] == 'away') & (trial_df["is_correct_away"] == True), np.nan)
+# Get RT for trials towards and away (only for correct responses, else NaN)
+trial_df['rt_towards'] = trial_df['rt'].where((trial_df['trial_type'] == 'towards') & (trial_df["is_correct"] == True), np.nan)
+trial_df['rt_away'] = trial_df['rt'].where((trial_df['trial_type'] == 'away') & (trial_df["is_correct"] == True), np.nan)
 
-trial_df['rt_miss_towards'] = trial_df['rt'].where((trial_df['trial_type'] == 'towards') & (trial_df["is_miss_towards"] == True), np.nan)
-trial_df['rt_miss_away'] = trial_df['rt'].where((trial_df['trial_type'] == 'away') & (trial_df["is_miss_away"] == True), np.nan)   
+trial_df['is_correct_towards'] = np.where(
+    trial_df['trial_type'] == 'towards', 
+    trial_df['is_correct'],  # Keep True/False for towards trials
+    np.nan                   # NaN for away trials
+)
+
+trial_df['is_correct_away'] = np.where(
+    trial_df['trial_type'] == 'away', 
+    trial_df['is_correct'],   # Keep True/False for away trials  
+    np.nan                   # NaN for towards trials
+)
+
 # Group key
 g = ["sbj", "item_id"]
-
 
 # Aggregate counts + RT summaries
 item_df = (
@@ -100,39 +109,31 @@ item_df = (
         vas_score=("vas_score", "first"),
         n_trials=("trial_index", "count"),
 
-        n_correct_towards=(("is_correct_towards"), "sum"),
-        n_correct_away=(("is_correct_away"), "sum"),
-        n_miss_towards=(("is_miss_towards"), "sum"),
-        n_miss_away=(("is_miss_away"), "sum"),
+        n_correct=(("is_correct"), "sum"),
+        n_miss=(("is_miss"), "sum"),
 
 
         # RT summaries for correct trials
-        mean_rt_correct_towards=("rt_correct_towards", "mean"),
-        median_rt_correct_towards=("rt_correct_towards", "median"),
-        mean_rt_correct_away=("rt_correct_away", "mean"),
-        median_rt_correct_away=("rt_correct_away", "median"),
+        mean_rt_towards=("rt_towards", "mean"),
+        median_rt_towards=("rt_towards", "median"),
+        mean_rt_away=("rt_away", "mean"),
+        median_rt_away=("rt_away", "median"),
 
-        # RT summaries for missed trials
-        mean_rt_miss_towards=("rt_miss_towards", "mean"),
-        median_rt_miss_towards=("rt_miss_towards", "median"),
-        mean_rt_miss_away=("rt_miss_away", "mean"),
-        median_rt_miss_away=("rt_miss_away", "median"),
+        # Accuracy
+        acc_all = (("is_correct"), "mean"),
+        acc_towards=(("is_correct_towards"), "mean"),
+        acc_away=(("is_correct_away"), "mean"),
     )
 )
-
-# Compute go/nogo accuracies from counts
-towards_den = item_df["n_correct_towards"] + item_df["n_miss_towards"]
-away_den = item_df["n_correct_away"] + item_df["n_miss_away"]
-
-item_df["acc_towards"] = item_df["n_correct_towards"] / towards_den
-item_df.loc[towards_den == 0, "acc_towards"] = np.nan
-
-item_df["acc_away"] = item_df["n_correct_away"] / away_den
-item_df.loc[away_den == 0, "acc_away"] = np.nan
-
+# ------------------------------------------------------------
+# 8) Compute implicit wanting on mean and median at item level
+# ------------------------------------------------------------
+item_df['iw_mean'] = item_df['mean_rt_away'] - item_df['mean_rt_towards']
+item_df['iw_median'] = item_df['median_rt_away'] - item_df['median_rt_towards']
 # ------------------------------------------------------------
 # 8) Extracting the dataframes for later use
 # ------------------------------------------------------------
 trial_df.to_csv("../data/extracted/trial_df.csv", index=False)
 item_df.to_csv("../data/extracted/item_df.csv", index=False)
 
+# %%

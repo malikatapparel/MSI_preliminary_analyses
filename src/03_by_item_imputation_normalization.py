@@ -25,8 +25,9 @@ test  = pd.read_csv("../data/preprocessed/by_item/test.csv")
 TARGET = "vas_score"
 ID_COLS = ["sbj", "item_id"]
 
+# %%
 # ------------------------------------------------------------
-# 2) Drop SST + n_trials
+# 2) n_trials
 # ------------------------------------------------------------
 drop_patterns = ["n_trials"]
 cols_to_drop = [c for c in train.columns if any(p in c for p in drop_patterns)]
@@ -37,8 +38,8 @@ test.drop(columns=cols_to_drop, inplace=True, errors="ignore")
 # ------------------------------------------------------------
 # 3) Within-Subject Centering (The "Preference" Signal)
 # ------------------------------------------------------------
-# This captures if a person was faster/slower than THEIR OWN average for an item.
-rt_cols = [c for c in train.columns if "rt" in c.lower() and c not in ID_COLS]
+# This captures if a person was faster/slower/different iw than THEIR OWN average for an item
+rt_cols = [c for c in train.columns if ("rt" in c.lower() or "iw" in c.lower()) and c not in ID_COLS]
 
 for c in rt_cols:
     # Calculate per-person mean on train
@@ -105,6 +106,21 @@ X_test_final = pd.DataFrame(
     columns=list(np.array(imp_cols)[orig_mask]) + list(np.array(imp_cols)[indicator_mask])
 )
 
+# 
+# let's check the final missing indicator thingy
+# See rows with ANY missing indicator = 1
+missing_indicator_cols = [c for c in X_train_final.columns if ("missingindicator") in c.lower()]
+missing_rows = X_train_final[
+    (X_train_final[missing_indicator_cols] == 1).any(axis=1)
+]
+missing_rows[missing_indicator_cols].head()
+
+# We see that the same column is missing for each feature, which is expected since we have one row per item and the same features are missing for that item across all subjects. This confirms that the missingness is consistent across subjects for each item, which is a good sanity check.
+# We can now create a single "missingness score" by averaging the indicators, which will give us a sense of how many features were missing for each item.
+X_train_final['missing_indicator'] = X_train_final[missing_indicator_cols].mean(axis=1)
+X_train_final.drop(columns=missing_indicator_cols, inplace=True)
+
+# %%
 # ------------------------------------------------------------
 # 6) Save & Export
 # ------------------------------------------------------------
@@ -122,5 +138,3 @@ X_test_final[TARGET] = y_test.values
 
 X_train_final.to_csv("../data/preprocessed/by_item/training_processed.csv", index=False)
 X_test_final.to_csv("../data/preprocessed/by_item/test_processed.csv", index=False)
-
-# %%
