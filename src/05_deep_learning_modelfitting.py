@@ -4,6 +4,7 @@ Project: Motivational Salience Index (MSI)
 Author: Marie Pittet
 Description: This scripts fits a LSTM network to trial-level behavioral data.
 """
+# %%
 # ------------------------------------------------------------
 # 0) Env
 # ------------------------------------------------------------
@@ -19,15 +20,15 @@ from scipy.stats import spearmanr
 # ------------------------------------------------------------
 # 1) CONFIGURATION
 # ------------------------------------------------------------
-TRAIN_PATH = "data/preprocessed/by_trial/training.csv"
-TEST_PATH = "data/preprocessed/by_trial/test.csv"
+TRAIN_PATH = "../data/preprocessed/by_trial/training.csv"
+TEST_PATH = "../data/preprocessed/by_trial/test.csv"
 
 TARGET = "vas_score"
-PERSON_ID = "fk_device_id"
+PERSON_ID = "sbj"
 ITEM_ID = "item_id"
 
 # Select numeric features only
-FEATURE_COLS = ['rt', 'is_correct', 'is_hit', 'is_miss', 'is_cr', 'is_fa', 'is_go']
+FEATURE_COLS = ['rt', 'is_correct', 'is_miss', 'is_towards', 'is_away']
 SEQ_LEN = 30  
 MLFLOW_EXPERIMENT = "food_liking_trial_level_lstm"
 
@@ -132,3 +133,5 @@ with mlflow.start_run():
     mlflow.log_metric("mean_within_person_spearman", final_rho)
     
     print(f"Trial-Level LSTM Mean Spearman: {final_rho:.4f}")
+
+# %%

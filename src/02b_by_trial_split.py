@@ -36,6 +36,7 @@ train_idx, test_idx = next(gss.split(df, groups=df[PERSON_ID]))
 train_df = df.iloc[train_idx].copy()
 test_df = df.iloc[test_idx].copy()
 
+# %%
 # ------------------------------------------------------------
 # 3) Feature Engineering & Normalization
 # ------------------------------------------------------------
@@ -44,13 +45,10 @@ def engineer_trial_features(data):
     # Map trial types and outcomes to numeric
     data['is_towards'] = (data['trial_type'] == 'towards').astype(int)
     data['is_away'] = (data['trial_type'] == 'away').astype(int)
-    data['is_correct'] = (data['outcome'] == 'Correct').astype(int)
-    
+    data['is_correct'] = data['is_correct'].astype(int)
+    data['is_miss'] = data['is_miss'].astype(int)
     # Handle RTs: Fill NaNs (No-Go trials) with 0 or a specific indicator
-    data['rt_correct_towards'] = data['rt_correct_towards'].fillna(0)
-    data['rt_miss_towards'] = data['rt_miss_towards'].fillna(0)
-    data['rt_correct_away'] = data['rt_correct_away'].fillna(0)
-    data['rt_miss_away'] = data['rt_miss_away'].fillna(0)
+    data['rt'] = data['rt'].fillna(0)
     
     return data
 
@@ -60,11 +58,16 @@ test_df = engineer_trial_features(test_df)
 
 # Scale numeric features based on Training set only to avoid leakage
 scaler = StandardScaler()
-num_cols = ['rt_correct_towards', 'rt_miss_towards', 'rt_correct_away', 'rt_miss_away'] # Adjust based on your snippet columns
+num_cols = ['rt'] # Adjust based on your snippet columns
 
 train_df[num_cols] = scaler.fit_transform(train_df[num_cols])
 test_df[num_cols] = scaler.transform(test_df[num_cols])
 
+# Keep only relevant columns
+cols = ['item_id', 'sbj', 'trial_index', 'trial_type',
+       'rt', 'vas_score', 'is_correct', 'is_miss', 'is_towards', 'is_away']
+train_df = train_df[cols]
+test_df = test_df[cols]
 # ------------------------------------------------------------
 # 4) Saving the Datasets
 # ------------------------------------------------------------
