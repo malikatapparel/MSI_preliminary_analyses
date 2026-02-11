@@ -2,9 +2,10 @@
 """
 Script: 04_ML_Modeling.py
 Project: Motivational Salience Index (MSI)
-Author: Marie Pittet
+Author: Marie Pittet, adapted by Malika Tapparel
 Description: Benchmarks ElasticNet, Ridge, and HistGB on item-level behavioral data.
 """
+# %%
 # ------------------------------------------------------------
 # 0) Env
 # ------------------------------------------------------------
@@ -30,26 +31,50 @@ from sklearn.linear_model import ElasticNet
 # ------------------------------------------------------------
 # 1) CONFIG & TRANSFORMERS
 # ------------------------------------------------------------
-DATA_PATH = "data/preprocessed/by_item/training.csv"
-TARGET, PERSON_ID, ITEM_ID = "vas_score", "fk_device_id", "item_id"
+DATA_PATH = "../data/preprocessed/by_item/training_processed.csv"
+TARGET, PERSON_ID, ITEM_ID = "vas_score", "sbj", "item_id"
 ID_COLS = [PERSON_ID, ITEM_ID]
-DROP_SUBSTRINGS = ["SST", "n_trials"]
+DROP_SUBSTRINGS = ["n_trials"]
 N_SPLITS, RT_QUANTILE, RANDOM_STATE = 5, 0.99, 42
 
+# %%
 # --- Human-Readable Mapping for Grant-Ready Figures ---
 RENAME_DICT = {
-    'n_fa_GNG_relative': 'Inhibitory Failure (GNG False Alarms)',
-    'mean_rt_go_GNG_relative': 'Approach Speed (GNG Go RT)',
-    'n_hit_GNG_relative': 'Task Engagement (GNG Hit Rate)',
-    'n_hit_GNG': 'Total Successful Trials (GNG Hits)',
-    'fa_rate_CAT_relative': 'Choice Impulsivity (CAT Errors)',
-    'acc_nogo_CAT_relative': 'Self-Control Accuracy (CAT)',
-    'median_rt_fa_CAT': 'Fast Decision Speed (CAT)',
-    'median_rt_go_GNG_relative': 'Consistent Approach Speed (GNG)',
-    'n_cr_CAT_relative': 'Successful Inhibitions (CAT)',
-    'n_hit_CAT_relative': 'Selection Accuracy (CAT)',
-    'n_miss_GNG_relative': 'Attention Lapses (GNG Misses)',
-    'missingindicator_median_rt_fa_GNG_relative': 'Data Consistency Index',
+    'n_correct_towards': 'Correct Towards Responses',
+    'n_correct_away': 'Correct Away Responses', 
+    'n_miss_towards': 'Missed Towards Responses',
+    'n_miss_away': 'Missed Away Responses',
+    'mean_rt_correct_towards': 'Mean Correct Towards RT',
+    'median_rt_correct_towards': 'Median Correct Towards RT',
+    'mean_rt_correct_away': 'Mean Correct Away RT',
+    'median_rt_correct_away': 'Median Correct Away RT',
+    'mean_rt_miss_towards': 'Mean Miss Towards RT',
+    'median_rt_miss_towards': 'Median Miss Towards RT',
+    'mean_rt_miss_away': 'Mean Miss Away RT',
+    'median_rt_miss_away': 'Median Miss Away RT',
+    'acc_towards': 'Towards Accuracy (%)',
+    'acc_away': 'Away Accuracy (%)',
+    'correct_towards_rate': 'Towards Correct Rate',
+    'correct_away_rate': 'Away Correct Rate',
+    'miss_towards_rate': 'Towards Miss Rate',
+    'miss_away_rate': 'Away Miss Rate',
+    'dprime_towards': 'Towards Sensitivity (d)',
+    'dprime_away': 'Away Sensitivity (d)',
+    'criterion_towards': 'Towards Response Bias',
+    'criterion_away': 'Away Response Bias',
+    'mean_rt_correct_towards_relative': 'Rel. Correct Towards Speed',
+    'median_rt_correct_towards_relative': 'Rel. Median Correct Towards Speed',
+    'mean_rt_correct_away_relative': 'Rel. Correct Away Speed',
+    'median_rt_correct_away_relative': 'Rel. Median Correct Away Speed',
+    'mean_rt_miss_towards_relative': 'Rel. Miss Towards Speed',
+    'median_rt_miss_towards_relative': 'Rel. Median Miss Towards Speed',
+    'mean_rt_miss_away_relative': 'Rel. Miss Away Speed',
+    'median_rt_miss_away_relative': 'Rel. Median Miss Away Speed',
+    'mean_rt_correct_towards_relative_relative': 'Double-Rel. Towards Speed',
+    'missingindicator_mean_rt_correct_away': 'Away Correct Mean RT Missing',
+    'missingindicator_mean_rt_correct_away_relative': 'Rel. Away Correct Mean Missing',
+    'missingindicator_median_rt_correct_away_relative': 'Rel. Away Correct Median Missing',
+    'missingindicator_mean_rt_miss_towards_relative': 'Rel. Towards Miss Mean Missing',
 }
 
 class BehavioralCleaner(BaseEstimator, TransformerMixin):
@@ -191,3 +216,5 @@ for model_name, reg in models.items():
         axes[1].set_ylabel("Behavioral Metric")
 
         plt.tight_layout(); plt.show()
+
+# %%

@@ -6,7 +6,7 @@ Description: This script:
 - Performs Within subject preference centering
 - Performs Capping, scaling, and imputation
 """
-
+# %%
 # ------------------------------------------------------------
 # 0) Env
 # ------------------------------------------------------------
@@ -19,19 +19,20 @@ import joblib
 # ------------------------------------------------------------
 # 1) Loading data (Keep IDs for grouping)
 # ------------------------------------------------------------
-train = pd.read_csv("data/preprocessed/by_item/training.csv")
-test  = pd.read_csv("data/preprocessed/by_item/test.csv")
+train = pd.read_csv("../data/preprocessed/by_item/training.csv")
+test  = pd.read_csv("../data/preprocessed/by_item/test.csv")
 
 TARGET = "vas_score"
-ID_COLS = ["fk_device_id", "item_id"]
+ID_COLS = ["sbj", "item_id"]
 
 # ------------------------------------------------------------
 # 2) Drop SST + n_trials
 # ------------------------------------------------------------
-drop_patterns = ["SST", "n_trials"]
+drop_patterns = ["n_trials"]
 cols_to_drop = [c for c in train.columns if any(p in c for p in drop_patterns)]
 train.drop(columns=cols_to_drop, inplace=True)
 test.drop(columns=cols_to_drop, inplace=True, errors="ignore")
+
 
 # ------------------------------------------------------------
 # 3) Within-Subject Centering (The "Preference" Signal)
@@ -41,14 +42,15 @@ rt_cols = [c for c in train.columns if "rt" in c.lower() and c not in ID_COLS]
 
 for c in rt_cols:
     # Calculate per-person mean on train
-    train_means = train.groupby("fk_device_id")[c].transform("mean")
+    train_means = train.groupby("sbj")[c].transform("mean")
     # Apply to train
     train[f"{c}_relative"] = train[c] - train_means
     
     # For test, we ideally use the train_means per person if available, 
     # but for a general pipeline, we use the test person's own mean.
-    test_means = test.groupby("fk_device_id")[c].transform("mean")
+    test_means = test.groupby("sbj")[c].transform("mean")
     test[f"{c}_relative"] = test[c] - test_means
+
 
 # ------------------------------------------------------------
 # 4) RT Capping & Transformation
@@ -109,11 +111,16 @@ X_test_final = pd.DataFrame(
 joblib.dump({"imputer": imputer, "scaler": scaler}, "preprocess_v2.joblib")
 
 # Include IDs back in for Group-KFold cross-validation later
-X_train_final["fk_device_id"] = train["fk_device_id"].values
+X_train_final["sbj"] = train["sbj"].values
+X_train_final["item_id"] = train["item_id"].values # forgotten ? 
+
 X_train_final[TARGET] = y_train.values
 
-X_test_final["fk_device_id"] = test["fk_device_id"].values
+X_test_final["sbj"] = test["sbj"].values
+X_test_final["item_id"] = test["item_id"].values # forgotten ? 
 X_test_final[TARGET] = y_test.values
 
-X_train_final.to_csv("training_processed.csv", index=False)
-X_test_final.to_csv("test_processed.csv", index=False)
+X_train_final.to_csv("../data/preprocessed/by_item/training_processed.csv", index=False)
+X_test_final.to_csv("../data/preprocessed/by_item/test_processed.csv", index=False)
+
+# %%

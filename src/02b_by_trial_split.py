@@ -1,12 +1,13 @@
 """
 Script: 02b_by_trial_split.py
 Project: Motivational Salience Index (MSI)
-Author: Marie Pittet
+Author: Marie Pittet, adapted by Malika Tapparel
 Description: This script:
 - Performs participant-level train/test split.
 - Standardizes RTs and numeric features.
 - Saves as long-format CSVs for LSTM/RNN ingestion.
 """
+# %%
 # ------------------------------------------------------------
 # 0) Env
 # ------------------------------------------------------------
@@ -19,10 +20,10 @@ from sklearn.preprocessing import StandardScaler
 # 1) Loading the raw trial-level dataset
 # ------------------------------------------------------------
 # Based on your snippet, we assume this file contains raw trial rows
-df = pd.read_csv("data/extracted/trial_df.csv") 
+df = pd.read_csv("../data/extracted/trial_df.csv") 
 
 TARGET = "vas_score"
-PERSON_ID = "fk_device_id"
+PERSON_ID = "sbj"
 ITEM_ID = "item_id"
 
 # ------------------------------------------------------------
@@ -41,20 +42,25 @@ test_df = df.iloc[test_idx].copy()
 # Convert categorical outcomes to numeric flags for the Neural Network
 def engineer_trial_features(data):
     # Map trial types and outcomes to numeric
-    data['is_go'] = (data['trial_type'] == 'go').astype(int)
-    data['is_correct'] = data['is_correct'].astype(int)
+    data['is_towards'] = (data['trial_type'] == 'towards').astype(int)
+    data['is_away'] = (data['trial_type'] == 'away').astype(int)
+    data['is_correct'] = (data['outcome'] == 'Correct').astype(int)
     
     # Handle RTs: Fill NaNs (No-Go trials) with 0 or a specific indicator
-    data['rt'] = data['rt'].fillna(0)
+    data['rt_correct_towards'] = data['rt_correct_towards'].fillna(0)
+    data['rt_miss_towards'] = data['rt_miss_towards'].fillna(0)
+    data['rt_correct_away'] = data['rt_correct_away'].fillna(0)
+    data['rt_miss_away'] = data['rt_miss_away'].fillna(0)
     
     return data
 
 train_df = engineer_trial_features(train_df)
 test_df = engineer_trial_features(test_df)
 
+
 # Scale numeric features based on Training set only to avoid leakage
 scaler = StandardScaler()
-num_cols = ['rt', 't_onset', 't_response'] # Adjust based on your snippet columns
+num_cols = ['rt_correct_towards', 'rt_miss_towards', 'rt_correct_away', 'rt_miss_away'] # Adjust based on your snippet columns
 
 train_df[num_cols] = scaler.fit_transform(train_df[num_cols])
 test_df[num_cols] = scaler.transform(test_df[num_cols])
@@ -62,7 +68,8 @@ test_df[num_cols] = scaler.transform(test_df[num_cols])
 # ------------------------------------------------------------
 # 4) Saving the Datasets
 # ------------------------------------------------------------
-train_df.to_csv("data/preprocessed/by_trial/training.csv", index=False)
-test_df.to_csv("data/preprocessed/by_trial/test.csv", index=False)
+train_df.to_csv("../data/preprocessed/by_trial/training.csv", index=False)
+test_df.to_csv("../data/preprocessed/by_trial/test.csv", index=False)
 
 print(f"Preprocessed {len(train_df)} training trials and {len(test_df)} test trials.")
+# %%

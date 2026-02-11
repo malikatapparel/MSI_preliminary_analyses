@@ -8,7 +8,6 @@ Description: This script further prepares the data for ML analyses by:
     - pivoting the dataset wide
     - performing the train-test split at that stage (before dealing with missing data and normalizing) to avoid leaking 
 """
-# %%
 
 # ------------------------------------------------------------
 # 0) Env
@@ -22,7 +21,6 @@ from sklearn.model_selection import GroupShuffleSplit
 # ------------------------------------------------------------
 df = pd.read_csv("../data/extracted/item_df.csv")
 
-# %%
 # ------------------------------------------------------------
 # 2) Computing Signal Detection Theory metrics (maybe more useful that raw hit/misses/etc)
 # ------------------------------------------------------------
@@ -35,8 +33,6 @@ df["correct_away_rate"]     = nca / (nca + nma)
 df["miss_towards_rate"]   = nmt / (nct + nmt)
 df["miss_away_rate"]     = nma / (nca + nma)
 
-
-# %%
 # log-linear correction to prevents norm.ppf(0) or norm.ppf(1) from blowing up to infinity when hit/FA rates are exactly 0 or 1.
 Hct = (nct  + 0.5) / (nct  + nmt  + 1.0)
 Hca = (nca  + 0.5) / (nca  + nma  + 1.0)
@@ -55,7 +51,6 @@ df["dprime_away"]       = norm.ppf(Hca) - norm.ppf(Fca)
 df["criterion_towards"] = -0.5 * (norm.ppf(Hct) + norm.ppf(Fct))
 df["criterion_away"]    = -0.5 * (norm.ppf(Hca) + norm.ppf(Fca))
 
-# %%
 # ------------------------------------------------------------
 # 4) train-test split (no pivot here since only 1 task)
 # ------------------------------------------------------------
@@ -77,10 +72,5 @@ train_df["vas_score"] = y_train
 test_df = X_test.copy()
 test_df["vas_score"] = y_test
 
-train_df.to_csv("../data/preprocessed/training.csv", index=False)
-test_df.to_csv("../data/preprocessed/test.csv", index=False)
-
-
-
-
-# %%
+train_df.to_csv("../data/preprocessed/by_item/training.csv", index=False)
+test_df.to_csv("../data/preprocessed/by_item/test.csv", index=False)
