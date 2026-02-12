@@ -1,14 +1,10 @@
-# Motivational Salience Index (MSI) Modeling / preliminary analyses
+# Motivational Salience Index (MSI) Modeling adapted from M. Pittet
 
-This repository contains the machine learning preliminary analysis pipeline used to decode subjective food preference from implicit behavioral task signatures. The data are derived from Najberg et al. (2019), they contain: food item liking (VAS ratings), and behavioral responses to tasks featuring these food items. We compared the performance of reuglarized regression (Elastic Net), a tree-based model (HistGB), and recurrent neural networks (LSTM) in predicting food preferences. 
+This repository contains the machine learning preliminary analysis pipeline adapted from the original code of Marie Pittet to fit the use case of a Stimulus-Response compatibility task to decode subjective food preference from implicit behavioral task signatures. The data are derived from Malika et al. (2023), they contain: food item liking (VAS ratings), and behavioral responses to tasks featuring these food items. We compared the performance of reuglarized regression (Elastic Net), a tree-based model (HistGB), and recurrent neural networks (LSTM) in predicting food preferences. 
 
 ## Project Overview
-The goal of this project is to predict individual food liking (VAS scores) using behavioral metrics derived from behavioral tasks. We applied within-person centering to isolate cue-specific reactivity.
+The goal of this project is to predict individual food liking (VAS scores) using behavioral metrics derived from the Stimulus-Response compatibility (SRC) tasks. We applied within-person centering to isolate cue-specific reactivity.
 
-## Key Results
-- **Winning Model:** ElasticNet (Regularized Linear Regression)
-- **Performance:** Mean within-person Spearman **ρ = 0.12** (Chance ρ = -0.02)
-- **Primary Predictors:** Stimulus-specific deviations in False Alarm rates and Go-trial reaction times at the GNG task.
 
 ## Repository Structure
 - `src/`: Python scripts for data extraction, preprocessing, and modeling.
