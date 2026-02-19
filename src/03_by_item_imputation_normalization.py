@@ -1,12 +1,13 @@
 """
 Script: 03_by_item_imputation_normalization.py
 Project: Motivational Salience Index (MSI)
-Author: Marie Pittet
+Author: Marie Pittet, adapted by Malika Tapparel
 Description: This script:
 - Performs Within subject preference centering
 - Performs Capping, scaling, and imputation
 """
 # %%
+
 # ------------------------------------------------------------
 # 0) Env
 # ------------------------------------------------------------
@@ -115,10 +116,21 @@ missing_rows = X_train_final[
 ]
 missing_rows[missing_indicator_cols].head()
 
+# %%
 # We see that the same column is missing for each feature, which is expected since we have one row per item and the same features are missing for that item across all subjects. This confirms that the missingness is consistent across subjects for each item, which is a good sanity check.
 # We can now create a single "missingness score" by averaging the indicators, which will give us a sense of how many features were missing for each item.
 X_train_final['missing_indicator'] = X_train_final[missing_indicator_cols].mean(axis=1)
 X_train_final.drop(columns=missing_indicator_cols, inplace=True)
+
+
+# %% Same for test
+missing_indicator_cols = [c for c in X_test_final.columns if ("missingindicator") in c.lower()]
+missing_rows = X_test_final[
+    (X_test_final[missing_indicator_cols] == 1).any(axis=1)
+]
+
+X_test_final['missing_indicator'] = X_test_final[missing_indicator_cols].mean(axis=1)
+X_test_final.drop(columns=missing_indicator_cols, inplace=True)
 
 # %%
 # ------------------------------------------------------------
@@ -138,3 +150,5 @@ X_test_final[TARGET] = y_test.values
 
 X_train_final.to_csv("../data/preprocessed/by_item/training_processed.csv", index=False)
 X_test_final.to_csv("../data/preprocessed/by_item/test_processed.csv", index=False)
+
+# %%
