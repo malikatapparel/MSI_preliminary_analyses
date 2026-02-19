@@ -9,7 +9,7 @@ Turns event-level task logs into:
 This 'test' branch will include only: is_correct, is_miss, rt_towards, rt_away
 - Merges VAS liking score  for each food item 
 """
-# %%
+
 # ------------------------------------------------------------
 # 0) Env
 # ------------------------------------------------------------
@@ -20,8 +20,8 @@ import pandas as pd
 # ------------------------------------------------------------
 # 1) Load data
 # ------------------------------------------------------------
-df_raw = pd.read_csv("../data/raw/SRC_Long_full.csv") # raw event-level log with one row per event (trials kept 200 ms< RT < 2000 ms)
-df_vas = pd.read_csv("../data/raw/liking_imageID.csv", sep = ";")
+df_raw = pd.read_csv("data/raw/SRC_Long_full.csv") # raw event-level log with one row per event (trials kept 200 ms< RT < 2000 ms)
+df_vas = pd.read_csv("data/raw/liking_imageID.csv", sep = ";")
 
 # ------------------------------------------------------------
 # 2) Keep relevant columns for df_raw
@@ -133,7 +133,7 @@ item_df['iw_median'] = item_df['median_rt_away'] - item_df['median_rt_towards']
 # ------------------------------------------------------------
 # 8) Extracting the dataframes for later use
 # ------------------------------------------------------------
-trial_df.to_csv("../data/extracted/trial_df.csv", index=False)
-item_df.to_csv("../data/extracted/item_df.csv", index=False)
+trial_df.to_csv("data/extracted/trial_df.csv", index=False)
+item_df.to_csv("data/extracted/item_df.csv", index=False)
 
 # %%

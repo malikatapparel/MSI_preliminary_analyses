@@ -8,7 +8,6 @@ Description: This script further prepares the data for ML analyses by:
     - pivoting the dataset wide
     - performing the train-test split at that stage (before dealing with missing data and normalizing) to avoid leaking 
 """
-# %%
 # ------------------------------------------------------------
 # 0) Env
 # ------------------------------------------------------------
@@ -19,7 +18,7 @@ from sklearn.model_selection import GroupShuffleSplit
 # ------------------------------------------------------------
 # 1) Loading the dataset
 # ------------------------------------------------------------
-df = pd.read_csv("../data/extracted/item_df.csv")
+df = pd.read_csv("data/extracted/item_df.csv")
 
 # ------------------------------------------------------------
 # 2) train-test split (no pivot here since only 1 task)
@@ -42,7 +41,6 @@ train_df["vas_score"] = y_train
 test_df = X_test.copy()
 test_df["vas_score"] = y_test
 
-train_df.to_csv("../data/preprocessed/by_item/training.csv", index=False)
-test_df.to_csv("../data/preprocessed/by_item/test.csv", index=False)
+train_df.to_csv("data/preprocessed/by_item/training.csv", index=False)
+test_df.to_csv("data/preprocessed/by_item/test.csv", index=False)
 
-# %%
