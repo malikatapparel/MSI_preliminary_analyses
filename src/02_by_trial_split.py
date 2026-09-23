@@ -3,14 +3,14 @@ Script: 02b_by_trial_split.py
 Project: Motivational Salience Index (MSI)
 Author: Marie Pittet, adapted by Malika Tapparel
 Description: This script:
+- Does some feature engineering
 - Performs participant-level train/test split.
-- Standardizes RTs and numeric features.
 - Saves as long-format CSVs for LSTM/RNN ingestion.
 """
 
 # ------------------------------------------------------------
 # 0) Env
-# ------------------------------------------------------------
+# ------------------------------------------------------------wq
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import GroupShuffleSplit
@@ -19,8 +19,8 @@ from sklearn.preprocessing import StandardScaler
 # ------------------------------------------------------------
 # 1) Loading the raw trial-level dataset
 # ------------------------------------------------------------
-# Based on your snippet, we assume this file contains raw trial rows
-df = pd.read_csv("data/extracted/trial_df.csv") 
+#this file contains raw trial rows
+df = pd.read_csv("../data/extracted/trial_df.csv") 
 
 TARGET = "vas_score"
 PERSON_ID = "sbj"
@@ -71,8 +71,8 @@ test_df = test_df[cols]
 # ------------------------------------------------------------
 # 4) Saving the Datasets
 # ------------------------------------------------------------
-train_df.to_csv("data/preprocessed/by_trial/training.csv", index=False)
-test_df.to_csv("data/preprocessed/by_trial/test.csv", index=False)
+train_df.to_csv("../data/preprocessed/by_trial/training.csv", index=False)
+test_df.to_csv("../data/preprocessed/by_trial/test.csv", index=False)
 
 print(f"Preprocessed {len(train_df)} training trials and {len(test_df)} test trials.")
 
